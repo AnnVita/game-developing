@@ -1,6 +1,7 @@
 // ≈сли используетс€ stdafx.h, перенесите директиву define в начало stdafx.h, 
 
 #include <iostream>
+#include "stdafx.h"
 #include <string>
 #include <vector>
 #include <cmath>
@@ -21,7 +22,7 @@ int main(int, char *[])
 	int S;
 	int M;
 	printf("S: ");
-	if (0 == scanf("%d", &S))
+	if (0 == scanf_s("%d", &S))
 	{
 		printf("\n" "expected floating-point number" "\n");
 		exit(1);
