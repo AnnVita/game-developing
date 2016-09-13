@@ -1,5 +1,4 @@
 // ≈сли используетс€ stdafx.h, перенесите директиву define в начало stdafx.h, 
-#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 #include <string>
