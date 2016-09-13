@@ -11,6 +11,7 @@
 
 // 1. Запрос максимальной высоты прыжка (int) от пользователя
 // 2. Проверка корректности ввода (вывод ошибок при отрицательном и нечисловом значении)
+//     2.1 Получение введенных данных в переменную
 // 3. Вывод времени, соответствующее максимальной высоте прыжка 
 // 4. Вывод промежуточных значений с шагом 0.1с
 
@@ -24,6 +25,7 @@
 // TODO: fix negative height values, fix heigh values higher than max height.
 int main(int, char *[])
 {
+	setlocale(LC_ALL, "");
 	const float g = 9.8f;
 	float T;
 	float Vn;
@@ -32,7 +34,7 @@ int main(int, char *[])
 	printf("S: ");
 	if (0 == scanf_s("%d", &S))
 	{
-		printf("\n" "expected floating-point number" "\n");
+		printf("\n" "Требуется ввести целое число" "\n");
 		exit(1);
 	}
 	// T - time point when height is at maximum.
