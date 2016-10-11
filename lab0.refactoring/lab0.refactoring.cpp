@@ -1,81 +1,73 @@
-// Если используется stdafx.h, перенесите директиву define в начало stdafx.h, 
-
-#include <iostream>
 #include "stdafx.h"
-#include <string>
-#include <vector>
-#include <cmath>
+#include <iostream>
 
-/*Программа принимает максимальную высоту от пользователя и печатает время подьема на эту высоту.
-Далее, с шагом 0.1, проходит по всем моментам времени, выводя текущую высоту и соответствующее ей время*/
+static const float GRAVITY_ACCEL = 9.8;
+static const float TIME_STEP = 0.1;
 
-// 1. Запрос максимальной высоты прыжка (int) от пользователя
-// 2. Проверка корректности ввода (вывод ошибок при отрицательном и нечисловом значении)
-//     2.1 Введенные данные должны быть целым числом
-//     2.2 Вывод ошибки если не '2.1'
-// 3. Вывод времени, соответствующее максимальной высоте прыжка 
-// 4. Вывод промежуточных значений с шагом 0.1с
-//         T - time point when height is at maximum.
-//         t - current time point
-//         v(t) == v0 - g * t
-//         v0 = g * T
-//         s(t) == v0 * t - 0.5 * g * t * t
-//         4.1 Вывод пары пары значений высоты-время, пока высота больше или равна нулю
-//             * Вывод пары значений при достижении максимальной высоты
-//             ** Вывод пары значений при достижении конечной точки полета
-// This program takes max jump height from input and prints
-// jump height for every time point with step 0.1 seconds.
-// Program should print all time points when height is min and max.
-//
-// TODO: Fix all warnings on high warning level (/W4, -Wall -Wextra).
-// TODO: Rename variables and split to several functions,
-// see also https://ps-group.github.io/sfml/coding_conventions.html
-// TODO: fix negative height values, fix heigh values higher than max height.
+using namespace std;
+
+float RequireMaxHeightFromUser();
+float GetTimeBy(const float maxHeight);
+float GetSpeedBy(const float time);
+void InitTimeAndSpeedValues(float & time, float & speed);
+void PrintHeight(const float time, const float speed);
+
 int main(int, char *[])
 {
-	setlocale(LC_ALL, "");
-	const float g = 9.8f;
-	float T;
-	float Vn;
-	int S;
-	int M;
-	// 1. Запрос максимальной высоты прыжка (int) от пользователя
-	printf("S: ");
-	// 2. Проверка корректности ввода (вывод ошибок при отрицательном и нечисловом значении)
-    // 2.1 Введенные данные должны быть целым числом
-	if (0 == scanf_s("%d", &S))
+	float maxHeightTime, speed;
+
+	InitTimeAndSpeedValues(maxHeightTime, speed);
+	bool needToPrintMaxHeight = true;
+	printf("There are pairs of values time-height:\n");
+
+	for (float currentTime = 0; currentTime < maxHeightTime * 2; currentTime += TIME_STEP)
 	{
-		//2.2 Вывод ошибки если не '2.1'
-		printf("\n" "Требуется ввести целое число" "\n");
-		exit(1);
-	}
-	T = sqrt(S * 2 / g);
-	// 3. Вывод времени, соответствующее максимальной высоте прыжка
-	printf("T=%f\n", T);
-	bool flag = false;
-	// 4. Вывод промежуточных значений с шагом 0.1с
-	// 4.1 Вывод пары пары значений высоты - время, пока высота больше или равна нулю
-	for (float t = 0; t < T * 2; t += 0.1f)
-	{
-		// * Вывод пары значений при достижении максимальной высоты
-		if (t > T && !flag)
+		if (currentTime > maxHeightTime && needToPrintMaxHeight)
 		{
-			flag = true;
-			float V0 = g * T;
-			float s = V0 * T - 0.5 * g * T * T;
-			printf("t=%f, s=%f\n", T, s);
+			needToPrintMaxHeight = false;
+			PrintHeight(maxHeightTime, speed);
 		}
-		float V0 = g * T;
-		float s = V0 * t - 0.5 * g * t * t;
-		printf("t=%f, s=%f\n", t, s);
+		PrintHeight(currentTime, speed);
 	}
-	//** Вывод пары значений при достижении конечной точки полета
-	float V0 = g * T;
-	float s = V0 * (T * 2) - 0.5 * g * (T * 2) * (T * 2);
-	printf("t=%f, s=%f\n", T * 2, s);
+	PrintHeight(maxHeightTime * 2, speed);
 
-	// TODO: remove system("pause") and never use it again.
-	system("pause");
+	return EXIT_SUCCESS;
+}
 
-	return 0;
+float RequireMaxHeightFromUser()
+{
+	float MaxHeight;
+	printf("Enter maximum jump height: ");
+	if (0 <= scanf_s("%f", &MaxHeight))
+	{
+		printf("\n" "Expected positive floating-point number." "\n");
+		EXIT_FAILURE;
+	}
+	return MaxHeight;
+}
+
+void InitTimeAndSpeedValues(float & time, float & speed)
+{
+	float maxHeight = RequireMaxHeightFromUser();
+
+	time = GetTimeBy(maxHeight);
+	printf("Time when height is maximum = %f\n", time);
+
+	speed = GetSpeedBy(time);
+}
+
+float GetTimeBy(const float maxHeight)
+{
+	return sqrt(maxHeight * 2 / GRAVITY_ACCEL);
+}
+
+float GetSpeedBy(const float time)
+{
+	return (GRAVITY_ACCEL * time);
+}
+
+void PrintHeight(const float time, const float speed)
+{
+	float height = speed * time - 0.5 * GRAVITY_ACCEL * time * time;
+	printf("time = %f, height= %f \n", time, height);
 }
