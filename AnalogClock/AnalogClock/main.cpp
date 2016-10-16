@@ -10,6 +10,8 @@ const unsigned SCREEN_HEIGHT = 600;
 const unsigned CLOCK_CIRCLE_SIZE = 250;
 const unsigned CLOCK_CIRCLE_THICKNESS = 2;
 const unsigned NUM_OF_DOTS = 60;
+const unsigned DIGITS_OFFSET = 10;
+const std::string MUSIC_FILE_ADRESS = "resources/clock-tick.wav";
 
 struct AnalogClock
 {
@@ -19,9 +21,11 @@ struct AnalogClock
 	sf::RectangleShape minuteHand;
 	sf::RectangleShape secondsHand;
 	sf::CircleShape dots[NUM_OF_DOTS];
+	sf::Music clockTicking;
 };
 
 sf::Vector2f GetWindowCenter(sf::RenderWindow & window);
+
 void InitDots(sf::CircleShape dots[NUM_OF_DOTS], sf::RenderWindow & window);
 void InitClock(AnalogClock & clock, sf::RenderWindow & window);
 void InitMainCircle(sf::CircleShape & mainCircle, sf::RenderWindow & window);
@@ -29,6 +33,10 @@ void InitCenterCircle(sf::CircleShape & centerCircle, sf::Vector2f & windowCente
 void InitHourHand(sf::RectangleShape & hourHand, sf::Vector2f & windowCenter);
 void InitMinuteHand(sf::RectangleShape & minuteHand, sf::Vector2f & windowCenter);
 void InitSecondsHand(sf::RectangleShape & secondsHand, sf::Vector2f & windowCenter);
+
+void StartClockTicking(sf::Music & clockTick, const std::string & fileAdress);
+
+float GetTimeAngle(const int circleDelimiter);
 
 int main()
 {
@@ -41,21 +49,17 @@ int main()
 
 	AnalogClock myClock;
 	InitClock(myClock, window);
-	// Create sound effect
-	//	sf::Music clockTick;
-	//	if (!clockTick.openFromFile("resources/clock-1.wav"))
-	//		return EXIT_FAILURE;
-	//	clockTick.setLoop(true);
-	//	clockTick.play();
+	StartClockTicking(myClock.clockTicking, MUSIC_FILE_ADRESS);
 
-	// Use a part of SFML logo as clock brand
-	//	sf::Texture clockBrand;
-	//	if (!clockBrand.loadFromFile("resources/clock-brand.png"))
-	//	{
-	//		return EXIT_FAILURE;
-	//	}
+    //Use a part of SFML logo as clock brand
+	sf::Texture clockBrand;
 
-	/*	sf::Sprite clockBrandSprite;
+	if (!clockBrand.loadFromFile("resources/sfml-logo.png"))
+	{
+			return EXIT_FAILURE;
+	}
+
+	sf::Sprite clockBrandSprite;
 	clockBrandSprite.setTexture(clockBrand);
 	clockBrandSprite.setOrigin(clockBrandSprite.getTextureRect().left + clockBrandSprite.getTextureRect().width / 2.0f,
 	clockBrandSprite.getTextureRect().top + clockBrandSprite.getTextureRect().height / 2.0f);
@@ -63,23 +67,21 @@ int main()
 	clockBrandSprite.setPosition(window.getSize().x / 2, window.getSize().y - 100);
 
 
-	// Create clock background
+	//Create clock background
 	sf::Texture clockImage;
-	if (!clockImage.loadFromFile("resources/clock-image.png"))
+	if (!clockImage.loadFromFile("resources/clock-image.jpg"))
 	{
 	return EXIT_FAILURE;
 	}
 
-	clockCircle.setTexture(&clockImage);
-	clockCircle.setTextureRect(sf::IntRect(40, 0, 500, 500));
-	*/
+	myClock.mainCircle.setTexture(&clockImage);
+	myClock.mainCircle.setTextureRect(sf::IntRect(40, 0, 500, 500));
+	
 	while (window.isOpen())
 	{
-		// Handle events
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			// Window closed: exit
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
@@ -103,7 +105,7 @@ int main()
 			window.draw(myClock.dots[i]);
 		}
 
-	//	window.draw(clockBrandSprite);
+		//window.draw(clockBrandSprite);
 		window.draw(myClock.hourHand);
 		window.draw(myClock.minuteHand);
 		window.draw(myClock.secondsHand);
@@ -133,24 +135,29 @@ void InitClock(AnalogClock & clock, sf::RenderWindow & window)
 	InitHourHand(clock.hourHand, windowCenter);
 	InitMinuteHand(clock.minuteHand, windowCenter);
 	InitSecondsHand(clock.secondsHand, windowCenter);
-
 }
 
 void InitDots(sf::CircleShape dots[NUM_OF_DOTS], sf::RenderWindow & window)
 {
 	int x, y;
 	float angle = 0.0;
+	const int dotsDrawRadius = CLOCK_CIRCLE_SIZE - DIGITS_OFFSET;
 	for (int i = 0; i < NUM_OF_DOTS; i++)
 	{
-		x = (CLOCK_CIRCLE_SIZE - 10) * cos(angle);
-		y = (CLOCK_CIRCLE_SIZE - 10) * sin(angle);
+		x = dotsDrawRadius * cos(angle);
+		y = dotsDrawRadius * sin(angle);
 		dots[i] = (i % 5 == 0) ? sf::CircleShape(3) : sf::CircleShape(1);
 		dots[i].setFillColor(sf::Color::Black);
 		dots[i].setOrigin(dots[i].getGlobalBounds().width / 2, dots[i].getGlobalBounds().height / 2);
 		dots[i].setPosition(x + window.getSize().x / 2, y + window.getSize().y / 2);
 
-		angle = angle + ((2 * M_PI) / NUM_OF_DOTS);
+		angle += GetTimeAngle(NUM_OF_DOTS);
 	}
+}
+
+float GetTimeAngle(const int circleDelimiter)
+{
+	return ((2 * M_PI) / NUM_OF_DOTS);
 }
 
 void InitMainCircle(sf::CircleShape & mainCircle, sf::RenderWindow & window)
@@ -196,3 +203,12 @@ void InitSecondsHand(sf::RectangleShape & secondsHand, sf::Vector2f & windowCent
 	secondsHand.setPosition(windowCenter);
 }
 
+void StartClockTicking(sf::Music & clockTick, const std::string & fileAdress)
+{
+	if (!clockTick.openFromFile(MUSIC_FILE_ADRESS))
+	{
+		exit(EXIT_FAILURE);
+	}
+	clockTick.setLoop(true);
+	clockTick.play();
+}
