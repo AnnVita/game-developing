@@ -127,8 +127,7 @@ bool HandleSnakeKeyPress(const sf::Event::KeyEvent & event, Snake & snake)
 
 void UpdateSnake(Snake & snake, float elapsedTime)
 {
-	const float SNAKE_SPEED = CELL_SIZE; // pixels per second.
-	const float step = SNAKE_SPEED;
+	const float step = CELL_SIZE;
 	ProcessSnakeBody(snake);
 	sf::Vector2f position = snake.body.front().getPosition();
 	switch (snake.direction)
@@ -189,6 +188,29 @@ void SnakeDie(Snake & snake)
 	snake.isAlive = false;
 }
 
+void HandleCollisionsWithEatableItems(Snake & snake, EatableItems & eatableItems, const WallList & walls)
+{
+	FoodType foodCollisionType;
+	if ((foodCollisionType = HappenedCollisionWithEatableItem(snake, eatableItems)) != FoodType::NONE)
+	{
+		switch (foodCollisionType)
+		{
+		case FoodType::NORMAL:
+			eatableItems.normal.setPosition(GenerateRandomCoordinates(walls));
+			IncreaseSnake(snake, SNAKE_USIAL_INCREASE);
+			break;
+		case FoodType::BAD:
+			eatableItems.bad.setPosition(GenerateRandomCoordinates(walls));
+			DecreaseSnake(snake, SNAKE_DECREASE);
+			break;
+		case FoodType::REVERSIVE:
+			eatableItems.reversive.setPosition(GenerateRandomCoordinates(walls));
+			ReverseSnake(snake);
+			break;
+		}
+	}
+}
+
 FoodType HappenedCollisionWithEatableItem(const Snake & snake, const EatableItems & eatableItems)
 {
 	const sf::Vector2f headCoordinates = snake.body.front().getPosition();
@@ -201,7 +223,6 @@ FoodType HappenedCollisionWithEatableItem(const Snake & snake, const EatableItem
 	else
 		return FoodType::NONE;
 }
-
 
 void IncreaseSnake(Snake & snake, const int addingAmount)
 {
@@ -266,4 +287,46 @@ bool IsInsideWall(const sf::Vector2f & comparingItem, const WallList & walls)
 			return true;
 	}
 	return false;
+}
+
+bool BadCollision(Snake & snake, WallList & walls)
+{
+	return ((HappenedCollisionWithBody(snake) || (HappenedCollisionWithWalls(snake, walls))) && (snake.direction != Direction::NONE));
+}
+
+void DrawGame(const Snake & snake, const EatableItems & eatableItems, const WallList & walls, sf::RenderWindow & window)
+{
+	DrawWalls(walls, window);
+	DrawEatableItems(eatableItems, window);
+	DrawSnake(snake.body, window);
+}
+
+void DrawEatableItems(const EatableItems & eatableItems, sf::RenderWindow & window)
+{
+	window.draw(eatableItems.normal);
+	window.draw(eatableItems.bad);
+	window.draw(eatableItems.reversive);
+	window.draw(eatableItems.big);
+}
+
+void DrawWalls(const WallList & walls, sf::RenderWindow & window)
+{
+	for (sf::RectangleShape wall : walls)
+	{
+		window.draw(wall);
+	}
+}
+
+void DrawSnake(const CircleList & snakeBody, sf::RenderWindow & window)
+{
+	for (sf::CircleShape bodyElement : snakeBody)
+	{
+		window.draw(bodyElement);
+	}
+}
+
+void DrawWindowMessage(const WindowMessage & windowMessage, sf::RenderWindow & window)
+{
+	window.draw(windowMessage.background);
+	window.draw(windowMessage.messageText);
 }

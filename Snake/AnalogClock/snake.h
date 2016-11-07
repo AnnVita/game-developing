@@ -69,6 +69,7 @@ bool HappenedCollisionWithBody(const Snake & snake);
 bool HappenedCollisionWithWalls(Snake & snake, WallList & walls);
 void SnakeDie(Snake & snake);
 
+void HandleCollisionsWithEatableItems(Snake & snake, EatableItems & eatableItems, const WallList & walls);
 FoodType HappenedCollisionWithEatableItem(const Snake & snake, const EatableItems & eatableItems);
 void IncreaseSnake(Snake & snake, const int addingAmount);
 void DecreaseSnake(Snake & snake, const int deletingAmount);
@@ -76,3 +77,10 @@ void ReverseSnake(Snake & snake);
 
 sf::Vector2f GenerateRandomCoordinates(const WallList & walls);
 bool IsInsideWall(const sf::Vector2f & comparingItem, const WallList & walls);
+bool BadCollision(Snake & snake, WallList & walls);
+
+void DrawWindowMessage(const WindowMessage & windowMessage, sf::RenderWindow & window);
+void DrawGame(const Snake & snake, const EatableItems & eatableItems, const WallList & walls, sf::RenderWindow & window);
+void DrawEatableItems(const EatableItems & eatableItems, sf::RenderWindow & window);
+void DrawWalls(const WallList & walls, sf::RenderWindow & window);
+void DrawSnake(const CircleList & snakeBody, sf::RenderWindow & window);
