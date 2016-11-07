@@ -3,22 +3,8 @@
 #include "snake.h"
 #include "consts.h"
 
-void Update(sf::Clock & clock, Snake & snake, float & timer)
-{
-	const float elapsedTime = clock.getElapsedTime().asSeconds();
-	timer += elapsedTime;
-	clock.restart();
-	if (timer > ITER_TIME)
-	{
-		timer = 0;
-		UpdateSnake(snake, elapsedTime);
-	}
-}
-
-std::string CreateGameOverString(const Snake & snake)
-{
-	return (GAME_OVER_MESSAGE + std::to_string(snake.body.size()));
-}
+void Update(sf::Clock & clock, Snake & snake, float & timer);
+std::string CreateGameOverString(const Snake & snake);
 
 int main()
 {
@@ -68,3 +54,19 @@ int main()
 	return EXIT_SUCCESS;
 }
 
+void Update(sf::Clock & clock, Snake & snake, float & timer)
+{
+	const float elapsedTime = clock.getElapsedTime().asSeconds();
+	timer += elapsedTime;
+	clock.restart();
+	if (timer > ITER_TIME)
+	{
+		timer = 0;
+		UpdateSnake(snake, elapsedTime);
+	}
+}
+
+std::string CreateGameOverString(const Snake & snake)
+{
+	return (GAME_OVER_MESSAGE + std::to_string(snake.body.size()));
+}
