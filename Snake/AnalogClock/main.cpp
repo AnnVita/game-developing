@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <iostream>
 #include "snake.h"
 #include "consts.h"
 
