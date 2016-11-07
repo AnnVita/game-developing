@@ -126,7 +126,7 @@ bool HandleSnakeKeyPress(const sf::Event::KeyEvent & event, Snake & snake)
 	return handled;
 }
 
-void UpdateSnake(Snake & snake, float elapsedTime)
+void UpdateSnake(Snake & snake)
 {
 	const float step = CELL_SIZE;
 	ProcessSnakeBody(snake);
@@ -320,10 +320,11 @@ void DrawWalls(const WallList & walls, sf::RenderWindow & window)
 
 void DrawSnake(const CircleList & snakeBody, sf::RenderWindow & window)
 {
-	for (sf::CircleShape bodyElement : snakeBody)
+	for (size_t i = snakeBody.size()-1; i > 0; --i)
 	{
-		window.draw(bodyElement);
+		window.draw(snakeBody[i]);
 	}
+	window.draw(snakeBody.front());
 }
 
 void DrawWindowMessage(const WindowMessage & windowMessage, sf::RenderWindow & window)

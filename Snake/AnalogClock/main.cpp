@@ -61,7 +61,7 @@ void Update(sf::Clock & clock, Snake & snake, float & timer)
 	if (timer > ITER_TIME)
 	{
 		timer = 0;
-		UpdateSnake(snake, elapsedTime);
+		UpdateSnake(snake);
 	}
 }
 

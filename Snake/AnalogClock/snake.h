@@ -61,7 +61,7 @@ void InitGameOverMessage(WindowMessage & gameOverMessage);
 void HandleEventsQueue(sf::RenderWindow & window, Snake & snake);
 bool HandleSnakeKeyPress(const sf::Event::KeyEvent & event, Snake & snake);
 
-void UpdateSnake(Snake & snake, float elapsedTime);
+void UpdateSnake(Snake & snake);
 void ProcessSnakeBody(Snake & snake);
 
 bool BadCollision(Snake & snake, WallList & walls);
