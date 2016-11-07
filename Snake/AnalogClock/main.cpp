@@ -15,71 +15,6 @@ void Update(sf::Clock & clock, Snake & snake, float & timer)
 	}
 }
 
-bool BadCollision(Snake & snake, WallList & walls)
-{
-	return ((HappenedCollisionWithBody(snake) || (HappenedCollisionWithWalls(snake, walls))) && (snake.direction != Direction::NONE));
-}
-
-void DrawEatableItems(const EatableItems & eatableItems, sf::RenderWindow & window)
-{
-	window.draw(eatableItems.normal);
-	window.draw(eatableItems.bad);
-	window.draw(eatableItems.reversive);
-	window.draw(eatableItems.big);
-}
-
-void DrawWalls(const WallList & walls, sf::RenderWindow & window)
-{
-	for (sf::RectangleShape wall : walls)
-	{
-		window.draw(wall);
-	}
-}
-
-void DrawSnake(const CircleList & snakeBody, sf::RenderWindow & window)
-{
-	for (sf::CircleShape bodyElement : snakeBody)
-	{
-		window.draw(bodyElement);
-	}
-}
-
-void DrawWindowMessage(const WindowMessage & windowMessage, sf::RenderWindow & window)
-{
-	window.draw(windowMessage.background);
-	window.draw(windowMessage.messageText);
-}
-
-void DrawGame(const Snake & snake, const EatableItems & eatableItems, const WallList & walls, sf::RenderWindow & window)
-{
-	DrawWalls(walls, window);
-	DrawEatableItems(eatableItems, window);
-	DrawSnake(snake.body, window);
-}
-
-void HandleCollisionsWithEatableItems(Snake & snake, EatableItems & eatableItems, const WallList & walls)
-{
-	FoodType foodCollisionType;
-	if ((foodCollisionType = HappenedCollisionWithEatableItem(snake, eatableItems)) != FoodType::NONE)
-	{
-		switch (foodCollisionType)
-		{
-		case FoodType::NORMAL:
-			eatableItems.normal.setPosition(GenerateRandomCoordinates(walls));
-			IncreaseSnake(snake, SNAKE_USIAL_INCREASE);
-			break;
-		case FoodType::BAD:
-			eatableItems.bad.setPosition(GenerateRandomCoordinates(walls));
-			DecreaseSnake(snake, SNAKE_DECREASE);
-			break;
-		case FoodType::REVERSIVE:
-			eatableItems.reversive.setPosition(GenerateRandomCoordinates(walls));
-			ReverseSnake(snake);
-			break;
-		}
-	}
-}
-
 std::string CreateGameOverString(const Snake & snake)
 {
 	return (GAME_OVER_MESSAGE + std::to_string(snake.body.size()));
@@ -128,7 +63,6 @@ int main()
 		}
 
 		window.display();
-
 	}
 
 	return EXIT_SUCCESS;

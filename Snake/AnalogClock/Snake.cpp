@@ -20,6 +20,7 @@ void InitSnake(Snake & snake)
 	for (size_t i = 0; i < INITIAL_NUMBER_OF_BODY_PARTS; ++i)
 	{
 		snake.body.push_front(bodyPart);
+		snake.body.front().move(CELL_SIZE * i, 0);
 	}
 }
 
