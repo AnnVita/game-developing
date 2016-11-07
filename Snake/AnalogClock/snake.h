@@ -5,8 +5,12 @@
 #include <ctime>
 #include <cmath>
 #include <deque>
+#include <string> 
 
-using RectangleList = std::deque <sf::CircleShape>;
+static const std::string FONT_FILE_ADRESS = "resources/montserrat.ttf";
+static const std::string GAME_OVER_MESSAGE = "Game Over :( \n You snake length == ";
+
+using CircleList = std::deque <sf::CircleShape>;
 using WallList = std::deque <sf::RectangleShape>;
 
 struct EatableItems
@@ -31,19 +35,28 @@ enum struct FoodType
 	NONE,
 	NORMAL,
 	BAD,
-	REVERSIVE,
-	BIG
+	REVERSIVE
 };
 
 struct Snake
 {
-	RectangleList body;
+	CircleList body;
 	Direction direction;
+	bool isAlive;
 };
 
+struct WindowMessage
+{
+	sf::RectangleShape background;
+	sf::Font textFont;
+	sf::Text messageText;
+};
+
+void InitGame(Snake & snake, EatableItems & eatableItems, WallList & walls);
 void InitSnake(Snake & snake);
-void InitEatableItems(EatableItems & eatableItems);
 void InitWallList(WallList & walls);
+void InitEatableItems(EatableItems & eatableItems, const WallList & walls);
+void InitGameOverMessage(WindowMessage & gameOverMessage);
 
 void HandleEventsQueue(sf::RenderWindow & window, Snake & snake);
 bool HandleSnakeKeyPress(const sf::Event::KeyEvent & event, Snake & snake);
@@ -51,11 +64,15 @@ bool HandleSnakeKeyPress(const sf::Event::KeyEvent & event, Snake & snake);
 void UpdateSnake(Snake & snake, float elapsedTime);
 void ProcessSnakeBody(Snake & snake);
 
+bool BadCollision(Snake & snake, WallList & walls);
 bool HappenedCollisionWithBody(const Snake & snake);
-FoodType HappenedCollisionWithEatableItem(const Snake & snake, const EatableItems & eatableItems);
 bool HappenedCollisionWithWalls(Snake & snake, WallList & walls);
+void SnakeDie(Snake & snake);
 
+FoodType HappenedCollisionWithEatableItem(const Snake & snake, const EatableItems & eatableItems);
 void IncreaseSnake(Snake & snake, const int addingAmount);
 void DecreaseSnake(Snake & snake, const int deletingAmount);
 void ReverseSnake(Snake & snake);
-void DrawEatableItems(const EatableItems & eatableItems, sf::RenderWindow & window);
+
+sf::Vector2f GenerateRandomCoordinates(const WallList & walls);
+bool IsInsideWall(const sf::Vector2f & comparingItem, const WallList & walls);

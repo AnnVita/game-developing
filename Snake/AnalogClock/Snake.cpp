@@ -1,37 +1,41 @@
 #include "stdafx.h"
 #include "snake.h"
 
+void InitGame(Snake & snake, EatableItems & eatableItems, WallList & walls)
+{
+	InitWallList(walls);
+	InitEatableItems(eatableItems, walls);
+	InitSnake(snake);
+}
+
 void InitSnake(Snake & snake)
 {
 	sf::CircleShape bodyPart(CELL_SIZE / 2);
 	bodyPart.setFillColor(sf::Color::White);
-    bodyPart.setPosition(sf::Vector2f(CELL_SIZE * 3, CELL_SIZE * 3));
+	bodyPart.setPosition(CELL_SIZE, CELL_SIZE * 3);
 
 	snake.direction = Direction::NONE;
+	snake.isAlive = true;
+	snake.body.clear();
 	for (size_t i = 0; i < INITIAL_NUMBER_OF_BODY_PARTS; ++i)
 	{
-		bodyPart.setPosition(i * CELL_SIZE, 0);
 		snake.body.push_front(bodyPart);
 	}
 }
 
-void InitEatableItems(EatableItems & eatableItems)
+void InitEatableItems(EatableItems & eatableItems, const WallList & walls)
 {
 	eatableItems.normal.setRadius(CELL_SIZE / 2);
-	eatableItems.normal.setPosition(CELL_SIZE * 3, CELL_SIZE * 3);
+	eatableItems.normal.setPosition(GenerateRandomCoordinates(walls));
 	eatableItems.normal.setFillColor(sf::Color::Green);
 
 	eatableItems.bad.setRadius(CELL_SIZE / 2);
-	eatableItems.bad.setPosition(CELL_SIZE * 4, CELL_SIZE * 4);
+	eatableItems.bad.setPosition(GenerateRandomCoordinates(walls));
 	eatableItems.bad.setFillColor(sf::Color::Red);
 
 	eatableItems.reversive.setRadius(CELL_SIZE / 2);
-	eatableItems.reversive.setPosition(CELL_SIZE * 8, CELL_SIZE * 8);
+	eatableItems.reversive.setPosition(GenerateRandomCoordinates(walls));
 	eatableItems.reversive.setFillColor(sf::Color::Blue);
-
-	eatableItems.big.setRadius(CELL_SIZE);
-	eatableItems.big.setPosition(CELL_SIZE * 6, CELL_SIZE * 6);
-	eatableItems.big.setFillColor(sf::Color::Green);
 }
 
 void InitWallList(WallList & walls)
@@ -62,6 +66,26 @@ void InitWallList(WallList & walls)
 	walls.push_back(centerHorizontalWall);
 }
 
+void InitGameOverMessage(WindowMessage & gameOverMessage)
+{
+	if (!gameOverMessage.textFont.loadFromFile(FONT_FILE_ADRESS))
+	{
+		exit(EXIT_FAILURE);
+	}
+
+	gameOverMessage.background.setPosition(sf::Vector2f(SCREEN_WIDTH / 2 - MESSAGE_WINDOW_WIDTH / 2, CELL_SIZE * 4));
+	gameOverMessage.background.setSize(sf::Vector2f(MESSAGE_WINDOW_WIDTH, MESSAGE_WINDOW_HEIGHT));
+	gameOverMessage.background.setFillColor(sf::Color(25, 25, 112, 140));
+	gameOverMessage.background.setOutlineThickness(12);
+	gameOverMessage.background.setOutlineColor(sf::Color(135, 206, 250));
+
+	gameOverMessage.messageText.setFont(gameOverMessage.textFont);
+
+	gameOverMessage.messageText.setCharacterSize(MESSAGE_FONT_SIZE);
+	gameOverMessage.messageText.setPosition(gameOverMessage.background.getPosition());
+	gameOverMessage.messageText.move(sf::Vector2f(25, 20));
+}
+
 void HandleEventsQueue(sf::RenderWindow & window, Snake & snake)
 {
 	sf::Event event;
@@ -73,7 +97,14 @@ void HandleEventsQueue(sf::RenderWindow & window, Snake & snake)
 		}
 		else if ((event.type == sf::Event::KeyPressed))
 		{
-			HandleSnakeKeyPress(event.key, snake);
+			if (snake.isAlive)
+			{
+				HandleSnakeKeyPress(event.key, snake);
+			}
+			else
+			{
+				InitSnake(snake);
+			}
 		}
 	}
 }
@@ -151,6 +182,13 @@ bool HappenedCollisionWithWalls(Snake & snake, WallList & walls)
 	return false;
 }
 
+void SnakeDie(Snake & snake)
+{
+	snake.direction = Direction::NONE;
+	snake.body.front().setFillColor(sf::Color::Red);
+	snake.isAlive = false;
+}
+
 FoodType HappenedCollisionWithEatableItem(const Snake & snake, const EatableItems & eatableItems)
 {
 	const sf::Vector2f headCoordinates = snake.body.front().getPosition();
@@ -160,8 +198,6 @@ FoodType HappenedCollisionWithEatableItem(const Snake & snake, const EatableItem
 		return FoodType::BAD;
 	else if (headCoordinates == eatableItems.reversive.getPosition())
 		return FoodType::REVERSIVE;
-	else if (headCoordinates == eatableItems.big.getPosition())
-		return FoodType::BIG;
 	else
 		return FoodType::NONE;
 }
@@ -207,10 +243,27 @@ void ReverseSnake(Snake & snake)
 	}
 }
 
-void DrawEatableItems(const EatableItems & eatableItems, sf::RenderWindow & window)
+sf::Vector2f GenerateRandomCoordinates(const WallList & walls)
 {
-	window.draw(eatableItems.normal);
-	window.draw(eatableItems.bad);
-	window.draw(eatableItems.reversive);
-	window.draw(eatableItems.big);
+	sf::Vector2f resultCoordinates;
+	do
+	{
+		resultCoordinates.x = rand() % (SCREEN_WIDTH / CELL_SIZE);
+		resultCoordinates.x = resultCoordinates.x * CELL_SIZE;
+		resultCoordinates.y = rand() % (SCREEN_HEIGHT / CELL_SIZE);
+		resultCoordinates.y = resultCoordinates.y * CELL_SIZE;
+	} 
+	while (IsInsideWall(resultCoordinates, walls));
+	return resultCoordinates;
+}
+
+bool IsInsideWall(const sf::Vector2f & comparingItem, const WallList & walls)
+{
+	for (sf::RectangleShape wall : walls)
+	{
+		if (!(((comparingItem.x < wall.getPosition().x) || (comparingItem.x > wall.getPosition().x + wall.getSize().x)) ||
+			((comparingItem.y < wall.getPosition().y) || (comparingItem.y > wall.getPosition().y + wall.getSize().y))))
+			return true;
+	}
+	return false;
 }

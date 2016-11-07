@@ -3,8 +3,6 @@
 #include "snake.h"
 #include "consts.h"
 
-static const float ITER_TIME = 0.1;
-
 void Update(sf::Clock & clock, Snake & snake, float & timer)
 {
 	const float elapsedTime = clock.getElapsedTime().asSeconds();
@@ -15,6 +13,76 @@ void Update(sf::Clock & clock, Snake & snake, float & timer)
 		timer = 0;
 		UpdateSnake(snake, elapsedTime);
 	}
+}
+
+bool BadCollision(Snake & snake, WallList & walls)
+{
+	return ((HappenedCollisionWithBody(snake) || (HappenedCollisionWithWalls(snake, walls))) && (snake.direction != Direction::NONE));
+}
+
+void DrawEatableItems(const EatableItems & eatableItems, sf::RenderWindow & window)
+{
+	window.draw(eatableItems.normal);
+	window.draw(eatableItems.bad);
+	window.draw(eatableItems.reversive);
+	window.draw(eatableItems.big);
+}
+
+void DrawWalls(const WallList & walls, sf::RenderWindow & window)
+{
+	for (sf::RectangleShape wall : walls)
+	{
+		window.draw(wall);
+	}
+}
+
+void DrawSnake(const CircleList & snakeBody, sf::RenderWindow & window)
+{
+	for (sf::CircleShape bodyElement : snakeBody)
+	{
+		window.draw(bodyElement);
+	}
+}
+
+void DrawWindowMessage(const WindowMessage & windowMessage, sf::RenderWindow & window)
+{
+	window.draw(windowMessage.background);
+	window.draw(windowMessage.messageText);
+}
+
+void DrawGame(const Snake & snake, const EatableItems & eatableItems, const WallList & walls, sf::RenderWindow & window)
+{
+	DrawWalls(walls, window);
+	DrawEatableItems(eatableItems, window);
+	DrawSnake(snake.body, window);
+}
+
+void HandleCollisionsWithEatableItems(Snake & snake, EatableItems & eatableItems, const WallList & walls)
+{
+	FoodType foodCollisionType;
+	if ((foodCollisionType = HappenedCollisionWithEatableItem(snake, eatableItems)) != FoodType::NONE)
+	{
+		switch (foodCollisionType)
+		{
+		case FoodType::NORMAL:
+			eatableItems.normal.setPosition(GenerateRandomCoordinates(walls));
+			IncreaseSnake(snake, SNAKE_USIAL_INCREASE);
+			break;
+		case FoodType::BAD:
+			eatableItems.bad.setPosition(GenerateRandomCoordinates(walls));
+			DecreaseSnake(snake, SNAKE_DECREASE);
+			break;
+		case FoodType::REVERSIVE:
+			eatableItems.reversive.setPosition(GenerateRandomCoordinates(walls));
+			ReverseSnake(snake);
+			break;
+		}
+	}
+}
+
+std::string CreateGameOverString(const Snake & snake)
+{
+	return (GAME_OVER_MESSAGE + std::to_string(snake.body.size()));
 }
 
 int main()
@@ -28,16 +96,12 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "SFML Snake", sf::Style::Close, settings);
 
 	EatableItems eatableItems;
-	InitEatableItems(eatableItems);
-
-	FoodType foodCollisionType;
-
 	Snake snake;
-	InitSnake(snake);
+    WallList walls;
+	InitGame(snake, eatableItems, walls);
 
-	WallList walls;
-	InitWallList(walls);
-
+	WindowMessage gameOverMessage;
+	InitGameOverMessage(gameOverMessage);
 
 	while (window.isOpen())
 	{
@@ -45,54 +109,22 @@ int main()
 
 		HandleEventsQueue(window, snake);
 
-		if (snake.direction != Direction::NONE)
+		if ((snake.direction != Direction::NONE) && (snake.isAlive))
 		    Update(clock, snake, timer);
 
-		if (HappenedCollisionWithBody(snake) && (snake.direction != Direction::NONE))
+		HandleCollisionsWithEatableItems(snake, eatableItems, walls);
+
+		if (BadCollision(snake, walls))
 		{
-			std::cout << "happened collision with BODY" << std::endl;
-			snake.direction = Direction::NONE;
+			SnakeDie(snake);
 		}
 
-		if (HappenedCollisionWithWalls(snake, walls) && (snake.direction != Direction::NONE))
-		{
-			std::cout << "happened collision with WALL" << std::endl;
-			snake.direction = Direction::NONE;
-		}
+		DrawGame(snake, eatableItems, walls, window);
 
-		if ((foodCollisionType = HappenedCollisionWithEatableItem(snake, eatableItems)) != FoodType::NONE)
+		if (!snake.isAlive)
 		{
-			switch (foodCollisionType)
-			{
-			case FoodType::NORMAL:
-				eatableItems.normal.move(CELL_SIZE, CELL_SIZE);
-				IncreaseSnake(snake, SNAKE_USIAL_INCREASE);
-				break;
-			case FoodType::BAD:
-				eatableItems.bad.move(CELL_SIZE, CELL_SIZE);
-				DecreaseSnake(snake, SNAKE_DECREASE);
-				break;
-			case FoodType::REVERSIVE:
-				eatableItems.reversive.move(CELL_SIZE, CELL_SIZE);
-				ReverseSnake(snake);
-				break;
-			case FoodType::BIG:
-				eatableItems.big.move(CELL_SIZE, CELL_SIZE);
-				IncreaseSnake(snake, SNAKE_BIG_INCREASE);
-				break;
-			}
-		}
-
-		DrawEatableItems(eatableItems, window);
-		
-		for (sf::RectangleShape & wall : walls)
-		{
-			window.draw(wall);
-		}
-
-		for (sf::CircleShape & bodyElement : snake.body)
-		{
-			window.draw(bodyElement);
+			gameOverMessage.messageText.setString(CreateGameOverString(snake));
+			DrawWindowMessage(gameOverMessage, window);
 		}
 
 		window.display();
