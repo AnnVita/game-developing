@@ -8,10 +8,13 @@
 #include <string> 
 
 static const std::string FONT_FILE_ADRESS = "resources/montserrat.ttf";
-static const std::string GAME_OVER_MESSAGE = "Game Over :( \n You snake length == ";
+static const std::string GAME_OVER_MESSAGE = "Game Over :( \n You snake length = ";
 
-using CircleList = std::deque <sf::CircleShape>;
-using WallList = std::deque <sf::RectangleShape>;
+const sf::Color MESSAGE_WINDOW_BACKGROUND_COLOR = sf::Color(25, 25, 112, 140);
+const sf::Color MESSAGE_WINDOW_OUTLINE_COLOR = sf::Color(135, 206, 250);
+
+using CircleList = std::deque<sf::CircleShape>;
+using WallList = std::deque<sf::RectangleShape>;
 
 struct EatableItems
 {
@@ -56,6 +59,7 @@ void InitGame(Snake & snake, EatableItems & eatableItems, WallList & walls);
 void InitSnake(Snake & snake);
 void InitWallList(WallList & walls);
 void InitEatableItems(EatableItems & eatableItems, const WallList & walls);
+void InitEatableItem(sf::CircleShape & item, sf::Color color, const WallList & walls);
 void InitGameOverMessage(WindowMessage & gameOverMessage);
 
 void HandleEventsQueue(sf::RenderWindow & window, Snake & snake);
@@ -67,7 +71,7 @@ void ProcessSnakeBody(Snake & snake);
 bool BadCollision(Snake & snake, WallList & walls);
 bool HappenedCollisionWithBody(const Snake & snake);
 bool HappenedCollisionWithWalls(Snake & snake, WallList & walls);
-void SnakeDie(Snake & snake);
+void KillSnake(Snake & snake);
 
 void HandleCollisionsWithEatableItems(Snake & snake, EatableItems & eatableItems, const WallList & walls);
 FoodType HappenedCollisionWithEatableItem(const Snake & snake, const EatableItems & eatableItems);

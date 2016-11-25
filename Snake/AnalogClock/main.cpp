@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "snake.h"
 #include "consts.h"
+const sf::Color BACKGROUND_COLOR = sf::Color(25, 25, 112);
 
 void Update(sf::Clock & clock, Snake & snake, float & timer);
 std::string CreateGameOverString(const Snake & snake);
@@ -25,19 +26,16 @@ int main()
 
 	while (window.isOpen())
 	{
-		window.clear(sf::Color(25, 25, 112));
+		window.clear(BACKGROUND_COLOR);
 
 		HandleEventsQueue(window, snake);
 
-		if ((snake.direction != Direction::NONE) && (snake.isAlive))
-		    Update(clock, snake, timer);
+	    Update(clock, snake, timer);
 
 		HandleCollisionsWithEatableItems(snake, eatableItems, walls);
 
 		if (BadCollision(snake, walls))
-		{
-			SnakeDie(snake);
-		}
+			KillSnake(snake);
 
 		DrawGame(snake, eatableItems, walls, window);
 
@@ -53,15 +51,18 @@ int main()
 	return EXIT_SUCCESS;
 }
 
-void Update(sf::Clock & clock, Snake & snake, float & timer)
+void Update(sf::Clock & clock, Snake & snake, float & gameTime)
 {
-	const float elapsedTime = clock.getElapsedTime().asSeconds();
-	timer += elapsedTime;
-	clock.restart();
-	if (timer > ITER_TIME)
+	if ((snake.direction != Direction::NONE) && (snake.isAlive))
 	{
-		timer = 0;
-		UpdateSnake(snake);
+		const float elapsedTime = clock.getElapsedTime().asSeconds();
+		gameTime += elapsedTime;
+		clock.restart();
+		if (gameTime > ITER_TIME)
+		{
+			gameTime = 0;
+			UpdateSnake(snake);
+		}
 	}
 }
 

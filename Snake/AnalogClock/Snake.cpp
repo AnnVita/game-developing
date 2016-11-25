@@ -26,17 +26,16 @@ void InitSnake(Snake & snake)
 
 void InitEatableItems(EatableItems & eatableItems, const WallList & walls)
 {
-	eatableItems.normal.setRadius(CELL_SIZE / 2);
-	eatableItems.normal.setPosition(GenerateRandomCoordinates(walls));
-	eatableItems.normal.setFillColor(sf::Color::Green);
+	InitEatableItem(eatableItems.normal, sf::Color::Green, walls);
+	InitEatableItem(eatableItems.bad, sf::Color::Red, walls);
+	InitEatableItem(eatableItems.reversive, sf::Color::Blue, walls);
+}
 
-	eatableItems.bad.setRadius(CELL_SIZE / 2);
-	eatableItems.bad.setPosition(GenerateRandomCoordinates(walls));
-	eatableItems.bad.setFillColor(sf::Color::Red);
-
-	eatableItems.reversive.setRadius(CELL_SIZE / 2);
-	eatableItems.reversive.setPosition(GenerateRandomCoordinates(walls));
-	eatableItems.reversive.setFillColor(sf::Color::Blue);
+void InitEatableItem(sf::CircleShape & item, sf::Color color,const WallList & walls)
+{
+	item.setRadius(CELL_SIZE / 2);
+	item.setPosition(GenerateRandomCoordinates(walls));
+	item.setFillColor(color);
 }
 
 void InitWallList(WallList & walls)
@@ -75,13 +74,12 @@ void InitGameOverMessage(WindowMessage & gameOverMessage)
 	}
 
 	gameOverMessage.background.setPosition(sf::Vector2f(SCREEN_WIDTH / 2 - MESSAGE_WINDOW_WIDTH / 2, CELL_SIZE * 4));
-	gameOverMessage.background.setSize(sf::Vector2f(MESSAGE_WINDOW_WIDTH, MESSAGE_WINDOW_HEIGHT));
-	gameOverMessage.background.setFillColor(sf::Color(25, 25, 112, 140));
+	gameOverMessage.background.setSize(sf::Vector2f(static_cast<float>(MESSAGE_WINDOW_WIDTH), static_cast<float>(MESSAGE_WINDOW_HEIGHT)));
+	gameOverMessage.background.setFillColor(MESSAGE_WINDOW_BACKGROUND_COLOR);
 	gameOverMessage.background.setOutlineThickness(12);
-	gameOverMessage.background.setOutlineColor(sf::Color(135, 206, 250));
+	gameOverMessage.background.setOutlineColor(MESSAGE_WINDOW_OUTLINE_COLOR);
 
 	gameOverMessage.messageText.setFont(gameOverMessage.textFont);
-
 	gameOverMessage.messageText.setCharacterSize(MESSAGE_FONT_SIZE);
 	gameOverMessage.messageText.setPosition(gameOverMessage.background.getPosition());
 	gameOverMessage.messageText.move(sf::Vector2f(25, 20));
@@ -133,20 +131,18 @@ void UpdateSnake(Snake & snake)
 	sf::Vector2f position = snake.body.front().getPosition();
 	switch (snake.direction)
 	{
-		case Direction::UP:
-			position.y = (snake.body.front().getPosition().y > 0) ? position.y - step : SCREEN_HEIGHT;
-			break;
-		case Direction::DOWN:
-			position.y = (snake.body.front().getPosition().y < SCREEN_HEIGHT) ? position.y + step : 0;
-			break;
-		case Direction::LEFT:
-			position.x = (snake.body.front().getPosition().x > 0) ? position.x - step : SCREEN_WIDTH;
-			break;
-		case Direction::RIGHT:
-			position.x = (snake.body.front().getPosition().x < SCREEN_WIDTH - CELL_SIZE) ? position.x + step : 0;
-			break;
-		case Direction::NONE:
-			break;
+	case Direction::UP:
+		position.y = (snake.body.front().getPosition().y > 0) ? position.y - step : SCREEN_HEIGHT;
+		break;
+	case Direction::DOWN:
+		position.y = (snake.body.front().getPosition().y < SCREEN_HEIGHT) ? position.y + step : 0;
+		break;
+	case Direction::LEFT:
+		position.x = (snake.body.front().getPosition().x > 0) ? position.x - step : SCREEN_WIDTH;
+		break;
+	case Direction::RIGHT:
+		position.x = (snake.body.front().getPosition().x < SCREEN_WIDTH - CELL_SIZE) ? position.x + step : 0;
+		break;
 	}
 	snake.body.front().setPosition(position);
 }
@@ -182,7 +178,7 @@ bool HappenedCollisionWithWalls(Snake & snake, WallList & walls)
 	return false;
 }
 
-void SnakeDie(Snake & snake)
+void KillSnake(Snake & snake)
 {
 	snake.direction = Direction::NONE;
 	snake.body.front().setFillColor(sf::Color::Red);
@@ -270,9 +266,9 @@ sf::Vector2f GenerateRandomCoordinates(const WallList & walls)
 	sf::Vector2f resultCoordinates;
 	do
 	{
-		resultCoordinates.x = rand() % (SCREEN_WIDTH / CELL_SIZE);
+		resultCoordinates.x = rand() % (SCREEN_WIDTH / static_cast<int>(CELL_SIZE));
 		resultCoordinates.x = resultCoordinates.x * CELL_SIZE;
-		resultCoordinates.y = rand() % (SCREEN_HEIGHT / CELL_SIZE);
+		resultCoordinates.y = rand() % (SCREEN_HEIGHT / static_cast<int>(CELL_SIZE));
 		resultCoordinates.y = resultCoordinates.y * CELL_SIZE;
 	} 
 	while (IsInsideWall(resultCoordinates, walls));
@@ -312,7 +308,7 @@ void DrawEatableItems(const EatableItems & eatableItems, sf::RenderWindow & wind
 
 void DrawWalls(const WallList & walls, sf::RenderWindow & window)
 {
-	for (sf::RectangleShape wall : walls)
+	for (auto wall : walls)
 	{
 		window.draw(wall);
 	}
