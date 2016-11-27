@@ -93,9 +93,10 @@ void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow
 	const float elapsedTime = clock.getElapsedTime().asSeconds();
 	timer += elapsedTime;
 	clock.restart();
-	sf::Vector2f moveSpeed(1, 0);
-	sf::Vector2f sizeIncrease(0.1, 0.1);
+	sf::Vector2f moveParameters(1, 0);
+	sf::Vector2f sizeIncrease;
 	sf::Vector2f stopCoordinates(SCREEN_SIZE - FRAME - MAIN_SIZE, SCREEN_SIZE);
+	sf::Vector2f stopSize;
 	if (timer > ITER_TIME)
 	{
 		timer = 0;
@@ -103,17 +104,30 @@ void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow
 		switch (shapes.animationIndex)
 		{
 		case 0:
-			if (!MoveByLine(shapes, moveSpeed, stopCoordinates))
-				++shapes.animationIndex;
-			break;
-		case 1:
 			if (!ChangeOpacity(shapes, -1, 100))
 				++shapes.animationIndex;
 			break;
-		case 2:
-			ChangeCoordinates(shapes);
+		case 1:
+			if (!ChangeCoordinates(shapes))
+				++shapes.animationIndex;
 			break;
-
+		case 2:
+			if (!ChangeOpacity(shapes, 1, 250))
+				++shapes.animationIndex;
+			break;
+		case 3:
+			moveParameters = sf::Vector2f(-1, 0);
+			stopCoordinates = sf::Vector2f(SCREEN_SIZE/2, SCREEN_SIZE / 2);
+			if (!MoveByLine(shapes, moveParameters, stopCoordinates))
+				++shapes.animationIndex;
+			break;
+		case 4:
+			sizeIncrease = sf::Vector2f(-1, -1);
+			stopSize = sf::Vector2f(MAIN_SIZE - 20, MAIN_SIZE - 20);
+			SyncRotateShapes(shapes);
+			if (!ChangeSize(shapes, sizeIncrease, stopSize))
+				++shapes.animationIndex;
+			break;
 
 		}
 		/*MoveByLine(shapes, moveCoordinates, window);
@@ -184,12 +198,7 @@ bool ChangeSize(SShapes & shapes, sf::Vector2f increase, sf::Vector2f stopSize)
 		newSize += increase;
 		shapes.itemList[i].setSize(newSize);
 	}
-
-	if (((newSize.x == stopSize.x) && (increase.x != 0)) || ((newSize.y == stopSize.y) && (increase.y != 0)))
-	{
-		return false;
-	}
-	return true;
+	return !(shapes.itemList.back().getSize() == stopSize);
 }
 
 bool ChangeOpacity(SShapes & shapes, int changeSpeed, int stopOpacity)
@@ -222,5 +231,5 @@ bool ChangeCoordinates(SShapes & shapes)
 			shapes.itemList[i].move(moveParameters);
 		}
 	}
-	return true;
+	return !(shapes.itemList.back().getPosition().x == shapes.itemList.front().getPosition().x);
 }
