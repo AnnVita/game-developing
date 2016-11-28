@@ -27,7 +27,8 @@ void AsyncRotateShapes(SShapes & shapes);
 bool MoveByLine(SShapes & shapes, sf::Vector2f moveCoordinates, sf::Vector2f stopCoordinates);
 bool ChangeSize(SShapes & shapes, sf::Vector2f increase, sf::Vector2f stopSize);
 bool ChangeOpacity(SShapes & shapes, int changeSpeed, int stopOpacity);
-bool ChangeCoordinates(SShapes & shapes);
+bool ChangeCoordinatesByY(SShapes & shapes);
+bool ChangeCoordinatesByX(SShapes & shapes);
 
 void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow & window);
 
@@ -108,33 +109,43 @@ void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow
 				++shapes.animationIndex;
 			break;
 		case 1:
-			if (!ChangeCoordinates(shapes))
+			if (!ChangeCoordinatesByY(shapes))
 				++shapes.animationIndex;
 			break;
 		case 2:
-			if (!ChangeOpacity(shapes, 1, 250))
-				++shapes.animationIndex;
-			break;
-		case 3:
+			ChangeOpacity(shapes, 1, 250);
 			moveParameters = sf::Vector2f(-1, 0);
 			stopCoordinates = sf::Vector2f(SCREEN_SIZE/2, SCREEN_SIZE / 2);
 			if (!MoveByLine(shapes, moveParameters, stopCoordinates))
 				++shapes.animationIndex;
 			break;
-		case 4:
-			sizeIncrease = sf::Vector2f(-1, -1);
+		case 3:
+			sizeIncrease = sf::Vector2f(-0.5, -0.5);
 			stopSize = sf::Vector2f(MAIN_SIZE - 20, MAIN_SIZE - 20);
 			SyncRotateShapes(shapes);
 			if (!ChangeSize(shapes, sizeIncrease, stopSize))
 				++shapes.animationIndex;
 			break;
-
+		case 4:
+			sizeIncrease = sf::Vector2f(0.5, 0.5);
+			stopSize = sf::Vector2f(MAIN_SIZE, MAIN_SIZE);
+			SyncRotateShapes(shapes);
+			if (!ChangeSize(shapes, sizeIncrease, stopSize) && shapes.itemList.front().getRotation() == 0)
+				++shapes.animationIndex;
+			break;
+		case 5:
+			ChangeOpacity(shapes, -1, 100);
+			moveParameters = sf::Vector2f(-1, 0);
+			stopCoordinates = sf::Vector2f(FRAME, FRAME);
+			if (!MoveByLine(shapes, moveParameters, stopCoordinates))
+				++shapes.animationIndex;
+			break;
+		case 6:
+			if (!ChangeCoordinatesByX(shapes))
+				++shapes.animationIndex;
+			break;
 		}
-		/*MoveByLine(shapes, moveCoordinates, window);
-		AsyncRotateShapes(shapes);
-		ChangeSize(shapes, sizeIncrease, window);
-		ChangeOpacity(shapes);
-		ChangeCoordinates(shapes, window);*/
+		
 	}
 	
 }
@@ -153,7 +164,7 @@ void SyncRotateShapes(SShapes & shapes)
 {
 	for (size_t i = 0; i < shapes.itemList.size(); ++i)
 	{
-		shapes.itemList[i].rotate(2);
+		shapes.itemList[i].rotate(3);
 	}
 }
 
@@ -175,24 +186,20 @@ void AsyncRotateShapes(SShapes & shapes)
 bool MoveByLine(SShapes & shapes, sf::Vector2f moveCoordinates, sf::Vector2f stopCoordinates)
 {
 	sf::Vector2f newPosition;
-	for (size_t i = 0; i < shapes.itemList.size(); ++i)
+	for (size_t i = 0; (i < shapes.itemList.size()) && (shapes.itemList.back().getPosition() != stopCoordinates); ++i)
 	{
 		newPosition = shapes.itemList[i].getPosition();
 		newPosition += moveCoordinates;
 		shapes.itemList[i].setPosition(newPosition);
-		if (((newPosition.x == stopCoordinates.x) && (moveCoordinates.x != 0)) || ((newPosition.y == stopCoordinates.y) && (moveCoordinates.y != 0)))
-		{
-			return false;
-		}
 	}
 	
-	return true;
+	return !(((newPosition.x == stopCoordinates.x) && (moveCoordinates.x != 0)) || ((newPosition.y == stopCoordinates.y) && (moveCoordinates.y != 0)));
 }
 
 bool ChangeSize(SShapes & shapes, sf::Vector2f increase, sf::Vector2f stopSize)
 {
 	sf::Vector2f newSize;
-	for (size_t i = 0; i < shapes.itemList.size(); ++i)
+	for (size_t i = 0; (i < shapes.itemList.size()) && (shapes.itemList.back().getSize() != stopSize); ++i)
 	{
 		newSize = shapes.itemList[i].getSize();
 		newSize += increase;
@@ -219,7 +226,7 @@ bool ChangeOpacity(SShapes & shapes, int changeSpeed, int stopOpacity)
 	return true;
 }
 
-bool ChangeCoordinates(SShapes & shapes)
+bool ChangeCoordinatesByY(SShapes & shapes)
 {
 	sf::Vector2f moveParameters;
 	for (size_t i = 0; i < shapes.itemList.size(); ++i)
@@ -231,5 +238,31 @@ bool ChangeCoordinates(SShapes & shapes)
 			shapes.itemList[i].move(moveParameters);
 		}
 	}
-	return !(shapes.itemList.back().getPosition().x == shapes.itemList.front().getPosition().x);
+	return (shapes.itemList.back().getPosition().x != shapes.itemList.front().getPosition().x);
+}
+
+bool ChangeCoordinatesByX(SShapes & shapes)
+{
+	sf::Vector2f moveParameters(1, 1);
+	for (size_t i = 0; i < shapes.itemList.size(); ++i)
+	{
+		if (shapes.itemList[i].getPosition().y < shapes.itemList.back().getPosition().y)
+		{
+			shapes.itemList[i].move(moveParameters);
+		}
+	}
+	return (shapes.itemList.back().getPosition().y != shapes.itemList.front().getPosition().y);
+}
+
+bool BildAsLedder(SShapes & shapes)
+{
+	const float ledderHeight = MAIN_SIZE + DISTANCE;
+	for (size_t i = 0; i < shapes.itemList.size(); ++i)
+	{
+		if (shapes.itemList[i].getPosition().y > SCREEN_SIZE - FRAME - ledderHeight * i)
+		{
+			shapes.itemList[i].move(sf::Vector2f(0, -1));
+		}
+	}
+	return true;
 }
