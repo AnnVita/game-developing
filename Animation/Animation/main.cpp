@@ -29,6 +29,7 @@ bool ChangeSize(SShapes & shapes, sf::Vector2f increase, sf::Vector2f stopSize);
 bool ChangeOpacity(SShapes & shapes, int changeSpeed, int stopOpacity);
 bool ChangeCoordinatesByY(SShapes & shapes);
 bool ChangeCoordinatesByX(SShapes & shapes);
+bool ConfigurateLadder(SShapes & shapes);
 
 void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow & window);
 
@@ -144,6 +145,10 @@ void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow
 			if (!ChangeCoordinatesByX(shapes))
 				++shapes.animationIndex;
 			break;
+		case 7:
+			if (!ConfigurateLadder(shapes))
+				++shapes.animationIndex;
+			break;
 		}
 		
 	}
@@ -254,12 +259,12 @@ bool ChangeCoordinatesByX(SShapes & shapes)
 	return (shapes.itemList.back().getPosition().y != shapes.itemList.front().getPosition().y);
 }
 
-bool BildAsLedder(SShapes & shapes)
+bool ConfigurateLadder(SShapes & shapes)
 {
-	const float ledderHeight = MAIN_SIZE + DISTANCE;
+	const float ladderHeight = MAIN_SIZE + DISTANCE;
 	for (size_t i = 0; i < shapes.itemList.size(); ++i)
 	{
-		if (shapes.itemList[i].getPosition().y > SCREEN_SIZE - FRAME - ledderHeight * i)
+		if (shapes.itemList[i].getPosition().y > SCREEN_SIZE - FRAME - ladderHeight * (i+1))
 		{
 			shapes.itemList[i].move(sf::Vector2f(0, -1));
 		}
