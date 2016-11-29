@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <deque>
+#include <iostream>
 
 static const unsigned SCREEN_SIZE = 600;
 static const unsigned NUM_OF_SHAPES = 10;
@@ -30,6 +31,8 @@ bool ChangeOpacity(SShapes & shapes, int changeSpeed, int stopOpacity);
 bool ChangeCoordinatesByY(SShapes & shapes);
 bool ChangeCoordinatesByX(SShapes & shapes);
 bool ConfigurateLadder(SShapes & shapes);
+bool ToSinglePosition(SShapes & shapes);
+bool ConfigurateInline(SShapes & shapes);
 
 void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow & window);
 
@@ -148,6 +151,32 @@ void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow
 		case 7:
 			if (!ConfigurateLadder(shapes))
 				++shapes.animationIndex;
+			break;
+		case 8:
+			SyncRotateShapes(shapes);
+			sizeIncrease = sf::Vector2f(0.5, 0.5);
+			stopSize = sf::Vector2f(MAIN_SIZE + 20, MAIN_SIZE + 20);
+			if (!ChangeOpacity(shapes, 1, 250) && !ChangeSize(shapes, sizeIncrease, stopSize))
+				++shapes.animationIndex;
+			break;
+		case 9:
+			SyncRotateShapes(shapes);
+			sizeIncrease = sf::Vector2f(-0.5, -0.5);
+			stopSize = sf::Vector2f(MAIN_SIZE, MAIN_SIZE);
+			if (!ChangeSize(shapes, sizeIncrease, stopSize) && shapes.itemList.front().getRotation() == 0)
+				++shapes.animationIndex;
+			break;
+		case 10:
+			if (!ToSinglePosition(shapes))
+				++shapes.animationIndex;
+			break;
+		case 11:
+			if (!ConfigurateInline(shapes))
+				++shapes.animationIndex;
+			break;
+		case 12:
+			shapes.animationIndex = 0;
+			std::reverse(shapes.itemList.begin(), shapes.itemList.end());
 			break;
 		}
 		
@@ -269,5 +298,33 @@ bool ConfigurateLadder(SShapes & shapes)
 			shapes.itemList[i].move(sf::Vector2f(0, -1));
 		}
 	}
-	return true;
+	return (shapes.itemList.back().getPosition().y != FRAME);
+}
+
+bool ToSinglePosition(SShapes & shapes)
+{
+	sf::Vector2f moveParameters;
+	for (size_t i = 0; i < shapes.itemList.size(); ++i)
+	{
+		moveParameters.x = (i == shapes.itemList.size() - 1) ? 0 : -1;
+		moveParameters.y = -1;
+		if (shapes.itemList[i].getPosition().x > shapes.itemList.back().getPosition().x)
+		{
+			shapes.itemList[i].move(moveParameters);
+		}
+	}
+	return (shapes.itemList.back().getPosition() != shapes.itemList.front().getPosition());
+}
+
+bool ConfigurateInline(SShapes & shapes)
+{
+	sf::Vector2f moveParameters(1, 0);
+	for (size_t i = 1; i < shapes.itemList.size(); ++i)
+	{
+		if (shapes.itemList[i].getPosition().x < shapes.itemList.front().getPosition().x + (MAIN_SIZE + DISTANCE)*i)
+		{
+			shapes.itemList[i].move(moveParameters);
+		}
+	}
+	return (shapes.itemList.back().getPosition().x != shapes.itemList.front().getPosition().x + (MAIN_SIZE + DISTANCE) * (shapes.itemList.size()-1));
 }
