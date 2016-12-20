@@ -11,6 +11,11 @@
 #include <stdio.h>
 #include <tchar.h>
 
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+
+#include <deque>
+#include <iostream>
 
 
 // TODO: reference additional headers your program requires here
