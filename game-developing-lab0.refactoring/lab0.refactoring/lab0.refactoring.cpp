@@ -14,7 +14,8 @@ void PrintHeight(const float time, const float speed);
 
 int main(int, char *[])
 {
-	float maxHeightTime, speed;
+	float maxHeightTime = 0;
+	float speed = 0;
 
 	InitTimeAndSpeedValues(maxHeightTime, speed);
 	bool needToPrintMaxHeight = true;

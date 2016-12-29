@@ -3,6 +3,8 @@
 
 void InitShapes(SShapes & shapes, sf::RenderWindow & window)
 {
+	(void)window;
+
 	sf::RectangleShape newRectangle;
 	newRectangle.setPosition(START_COORDINATES);
 	newRectangle.setFillColor(shapes.color);

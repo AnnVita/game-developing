@@ -52,13 +52,11 @@ bool ChangeSize(SShapes & shapes, sf::Vector2f increase, sf::Vector2f stopSize)
 
 bool ChangeOpacity(SShapes & shapes, int changeSpeed, int stopOpacity)
 {
-	int currentOpacity;
-	sf::Color newColor;
 	for (size_t i = 0; i < shapes.itemList.size(); ++i)
 	{
-		currentOpacity = shapes.itemList[i].getFillColor().a;
-		newColor = shapes.itemList[i].getFillColor();
-		newColor.a = currentOpacity + changeSpeed;
+		int currentOpacity = shapes.itemList[i].getFillColor().a;
+		sf::Color newColor = shapes.itemList[i].getFillColor();
+		newColor.a = sf::Uint8(currentOpacity + changeSpeed);
 		if (newColor.a == stopOpacity)
 		{
 			return false;
@@ -70,9 +68,9 @@ bool ChangeOpacity(SShapes & shapes, int changeSpeed, int stopOpacity)
 
 bool ChangeCoordinatesByY(SShapes & shapes)
 {
-	sf::Vector2f moveParameters;
 	for (size_t i = 0; i < shapes.itemList.size(); ++i)
 	{
+		sf::Vector2f moveParameters;
 		moveParameters.x = (i == 0) ? 0.0f : 1.0f;
 		moveParameters.y = 1;
 		if (shapes.itemList[i].getPosition().x < shapes.itemList[0].getPosition().x)
@@ -141,7 +139,7 @@ void ProcessAnimation(SShapes & shapes)
 {
 	sf::Vector2f moveParameters(1, 0);
 	sf::Vector2f sizeIncrease;
-	sf::Vector2f stopCoordinates(SCREEN_SIZE - FRAME - MAIN_SIZE, SCREEN_SIZE);
+	sf::Vector2f stopCoordinates(float(SCREEN_SIZE - FRAME - MAIN_SIZE), float(SCREEN_SIZE));
 	sf::Vector2f stopSize;
 
 	switch (shapes.animationIndex)

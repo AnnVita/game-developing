@@ -43,6 +43,8 @@ void HandleEventsQueue(sf::RenderWindow & window)
 
 void Update(SShapes & shapes, sf::Clock & clock, float & timer, sf::RenderWindow & window)
 {
+	(void)window;
+
 	const float elapsedTime = clock.getElapsedTime().asSeconds();
 	timer += elapsedTime;
 	clock.restart();
